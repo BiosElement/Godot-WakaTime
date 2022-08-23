@@ -54,15 +54,24 @@ func send_heartbeat(file, is_write = false):
 	var project = "\"" + ProjectSettings.get('application/config/name') + "\""
 	var plugin = "\"" + get_user_agent() + "\""
 	
+	var cmd = []
+	
 	# Prepare Command Arguments
-	var cmd  = ['--config', config_path, '--entity', entity.c_escape(), '--time', timestamp, '--plugin', plugin.c_escape()]
+	if is_windows:
+		cmd  = ['--config', config_path, '--entity', entity.c_escape(), '--time', timestamp, '--plugin', plugin.c_escape()]
+	else:
+		cmd  = ['--config', config_path, '--entity', entity, '--time', timestamp, '--plugin', plugin]
 	
 	if is_write:
 		cmd.append('--write')
 	
 	if get_editor_interface().get_editor_settings().has_setting("WakaTime/Hide_Project_Name") && get_editor_interface().get_editor_settings().get_setting("WakaTime/Hide_Project_Name"):
 		print("Hiding Project Name")
-		cmd.append('--project ' + project.c_escape())
+	else:
+		if is_windows:
+			cmd.append('--project ' + project.c_escape())
+		else:
+			cmd.append('--project ' + project)
 
 	if get_editor_interface().get_editor_settings().has_setting("WakaTime/Hide_Filenames") && get_editor_interface().get_editor_settings().get_setting("WakaTime/Hide_Filenames"):
 		print("Hiding  Filenames")
