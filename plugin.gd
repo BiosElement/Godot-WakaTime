@@ -57,6 +57,9 @@ func send_heartbeat(file, is_write = false):
 	# Prepare Command Arguments
 	var cmd  = ['--config', config_path, '--entity', entity.c_escape(), '--project', project.c_escape(), '--time', timestamp, '--plugin', plugin.c_escape()]
 	
+	if is_write:
+		cmd.append('--write')
+	
 	last_heartbeat = heartbeat
 	
 	#print(cmd)
