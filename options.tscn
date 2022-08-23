@@ -3,6 +3,7 @@
 [ext_resource path="res://addons/wakatime/options.gd" type="Script" id=1]
 
 [node name="Options" type="PopupPanel"]
+visible = true
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -10,7 +11,7 @@ anchor_bottom = 0.5
 margin_left = -150.0
 margin_top = -75.0
 margin_right = 150.0
-margin_bottom = 75.0
+margin_bottom = 115.0
 script = ExtResource( 1 )
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
@@ -36,14 +37,14 @@ margin_bottom = 42.0
 
 [node name="Label" type="Label" parent="VBoxContainer/HBoxContainer"]
 margin_top = 5.0
-margin_right = 57.0
+margin_right = 71.0
 margin_bottom = 19.0
-text = "API Key: "
+text = "Config Path"
 align = 1
 valign = 1
 
 [node name="Config_Path" type="LineEdit" parent="VBoxContainer/HBoxContainer"]
-margin_left = 61.0
+margin_left = 75.0
 margin_right = 292.0
 margin_bottom = 24.0
 size_flags_horizontal = 3
@@ -76,17 +77,35 @@ margin_right = 121.0
 margin_bottom = 27.0
 text = "Hide Project Name"
 
-[node name="Hide_Project_Name Toggle" type="CheckButton" parent="VBoxContainer/HBoxContainer2"]
+[node name="Hide_Project_Name_Toggle" type="CheckButton" parent="VBoxContainer/HBoxContainer2"]
 margin_left = 125.0
 margin_right = 292.0
 margin_bottom = 40.0
 size_flags_horizontal = 3
 align = 1
 
-[node name="HBoxContainer3" type="HBoxContainer" parent="VBoxContainer"]
+[node name="HBoxContainer5" type="HBoxContainer" parent="VBoxContainer"]
 margin_top = 118.0
 margin_right = 292.0
-margin_bottom = 138.0
+margin_bottom = 158.0
+
+[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer5"]
+margin_top = 13.0
+margin_right = 100.0
+margin_bottom = 27.0
+text = "Hide Filenames"
+
+[node name="Hide_Filenames_Toggle" type="CheckButton" parent="VBoxContainer/HBoxContainer5"]
+margin_left = 104.0
+margin_right = 292.0
+margin_bottom = 40.0
+size_flags_horizontal = 3
+align = 1
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="VBoxContainer"]
+margin_top = 162.0
+margin_right = 292.0
+margin_bottom = 182.0
 
 [node name="Cancel_Button" type="Button" parent="VBoxContainer/HBoxContainer3"]
 margin_right = 144.0

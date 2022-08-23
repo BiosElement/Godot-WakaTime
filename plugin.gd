@@ -55,10 +55,18 @@ func send_heartbeat(file, is_write = false):
 	var plugin = "\"" + get_user_agent() + "\""
 	
 	# Prepare Command Arguments
-	var cmd  = ['--config', config_path, '--entity', entity.c_escape(), '--project', project.c_escape(), '--time', timestamp, '--plugin', plugin.c_escape()]
+	var cmd  = ['--config', config_path, '--entity', entity.c_escape(), '--time', timestamp, '--plugin', plugin.c_escape()]
 	
 	if is_write:
 		cmd.append('--write')
+	
+	if get_editor_interface().get_editor_settings().has_setting("WakaTime/Hide_Project_Name") && get_editor_interface().get_editor_settings().get_setting("WakaTime/Hide_Project_Name"):
+		print("Hiding Project Name")
+		cmd.append('--project ' + project.c_escape())
+
+	if get_editor_interface().get_editor_settings().has_setting("WakaTime/Hide_Filenames") && get_editor_interface().get_editor_settings().get_setting("WakaTime/Hide_Filenames"):
+		print("Hiding  Filenames")
+		cmd.append('--hidefilenames')
 	
 	last_heartbeat = heartbeat
 	
