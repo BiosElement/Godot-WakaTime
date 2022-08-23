@@ -4,9 +4,11 @@ extends EditorPlugin
 const HeartBeat = preload('res://addons/wakatime/heartbeat.gd')
 const MODIFIED_DELAY = 120
 
-var wakatime_cli = OS.get_environment("HOME") + "/.wakatime/wakatime-cli"
-var config_path = OS.get_environment("HOME") + "/.wakatime.cfg"
 var options_popup = preload('res://addons/wakatime/options.tscn')
+
+var wakatime_cli = null
+var config_path = OS.get_environment("HOME") + "/.wakatime.cfg"
+var is_windows = false
 
 var last_heartbeat = HeartBeat.new()
 
@@ -16,6 +18,16 @@ func _enter_tree():
 func _ready():
 	var script_editor = get_editor_interface().get_script_editor()
 	script_editor.call_deferred('connect', 'editor_script_changed', self, '_on_script_changed')
+	
+	if get_editor_interface().get_editor_settings().has_setting("WakaTime/CLI_Path"):
+		wakatime_cli = get_editor_interface().get_editor_settings().get_setting("WakaTime/CLI_Path")
+	else:
+		push_warning ("WakaTime CLI Path not found, Resorting to Linux default")
+		wakatime_cli = OS.get_environment("HOME") + "/.wakatime/wakatime-cli"
+	
+	if OS.get_name() == "Windows":
+		is_windows = true
+
 	open_options_popup()
 
 func _exit_tree():
@@ -36,12 +48,17 @@ func send_heartbeat(file, is_write = false):
 	var plugin = "\"" + get_user_agent() + "\""
 	
 	# Prepare Command Arguments
-	var cmd = ['--config', config_path,
+	var cmd  = []
+	
+	if is_windows:
+		cmd.append('c')
+	
+	cmd.append(['--config', config_path,
 #			   '--key', wakatime_api_key,
 			   '--entity', entity,
 			   '--project', project,
 			   '--time', timestamp,
-			   '--plugin', plugin]
+			   '--plugin', plugin])
 	
 	last_heartbeat = heartbeat
 	
@@ -80,7 +97,6 @@ func get_current_file():
 
 func get_user_agent():
 	return 'Godot/%s %s/%s' % [get_engine_version(), get_plugin_name(), get_plugin_version()]
-
 
 func get_plugin_name():
 	return 'WakaTime'
