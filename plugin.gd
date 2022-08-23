@@ -7,7 +7,7 @@ const MODIFIED_DELAY = 120
 var options_popup = preload('res://addons/wakatime/options.tscn')
 
 var wakatime_cli = null
-var config_path = OS.get_environment("HOME") + "/.wakatime.cfg"
+var config_path = null
 var is_windows = false
 
 var last_heartbeat = HeartBeat.new()
@@ -18,15 +18,6 @@ func _enter_tree():
 func _ready():
 	var script_editor = get_editor_interface().get_script_editor()
 	script_editor.call_deferred('connect', 'editor_script_changed', self, '_on_script_changed')
-	
-	if get_editor_interface().get_editor_settings().has_setting("WakaTime/CLI_Path"):
-		wakatime_cli = get_editor_interface().get_editor_settings().get_setting("WakaTime/CLI_Path")
-	else:
-		push_warning ("WakaTime CLI Path not found, Resorting to Linux default")
-		wakatime_cli = OS.get_environment("HOME") + "/.wakatime/wakatime-cli"
-	
-	if OS.get_name() == "Windows":
-		is_windows = true
 
 	open_options_popup()
 
@@ -44,27 +35,33 @@ func send_heartbeat(file, is_write = false):
 	if not is_write or entity == last_heartbeat.entity or not enough_time_has_passed(last_heartbeat.timestamp):
 		return
 	
+	# Setting CLI Path here because Godot Plugins suck
+	if get_editor_interface().get_editor_settings().has_setting("WakaTime/CLI_Path"):
+		wakatime_cli = get_editor_interface().get_editor_settings().get_setting("WakaTime/CLI_Path")
+	else:
+		push_warning ("WakaTime CLI Path not found, Resorting to Linux default")
+		wakatime_cli = OS.get_environment("HOME") + "/.wakatime/wakatime-cli"
+		
+	if get_editor_interface().get_editor_settings().has_setting("WakaTime/Config_Path"):
+		config_path = get_editor_interface().get_editor_settings().get_setting("WakaTime/Config_Path")
+	else:
+		push_warning ("WakaTime Config Path not found, Resorting to Linux default")
+		config_path = OS.get_environment("HOME") + "/.wakatime.cfg"
+	
+	if OS.get_name() == "Windows":
+		is_windows = true
+	
 	var project = "\"" + ProjectSettings.get('application/config/name') + "\""
 	var plugin = "\"" + get_user_agent() + "\""
 	
 	# Prepare Command Arguments
-	var cmd  = []
-	
-	if is_windows:
-		cmd.append('c')
-	
-	cmd.append(['--config', config_path,
-#			   '--key', wakatime_api_key,
-			   '--entity', entity,
-			   '--project', project,
-			   '--time', timestamp,
-			   '--plugin', plugin])
+	var cmd  = ['--config', config_path, '--entity', entity.c_escape(), '--project', project.c_escape(), '--time', timestamp, '--plugin', plugin.c_escape()]
 	
 	last_heartbeat = heartbeat
 	
 	#print(cmd)
 	#print(wakatime_cli)
-	OS.execute(wakatime_cli, PoolStringArray(cmd), true, [])
+	OS.execute(wakatime_cli, PoolStringArray(cmd), false, [], false, false)
 
 func _on_script_changed(file):
 	send_heartbeat(file)

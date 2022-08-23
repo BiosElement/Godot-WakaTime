@@ -3,7 +3,6 @@
 [ext_resource path="res://addons/wakatime/options.gd" type="Script" id=1]
 
 [node name="Options" type="PopupPanel"]
-visible = true
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -43,7 +42,7 @@ text = "API Key: "
 align = 1
 valign = 1
 
-[node name="API_Key" type="LineEdit" parent="VBoxContainer/HBoxContainer"]
+[node name="Config_Path" type="LineEdit" parent="VBoxContainer/HBoxContainer"]
 margin_left = 61.0
 margin_right = 292.0
 margin_bottom = 24.0
