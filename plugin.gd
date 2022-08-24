@@ -28,7 +28,7 @@ func _exit_tree():
 
 func send_heartbeat(file, is_write = false):
 	# Setting these early to test if valid to send
-	var entity = "\"" + ProjectSettings.globalize_path(file.resource_path) + "\""
+	var entity = ProjectSettings.globalize_path(file.resource_path)
 	var timestamp = OS.get_unix_time()
 	var heartbeat = HeartBeat.new(entity, timestamp, is_write)
 	
@@ -51,36 +51,31 @@ func send_heartbeat(file, is_write = false):
 	if OS.get_name() == "Windows":
 		is_windows = true
 	
-	var project = "\"" + ProjectSettings.get('application/config/name') + "\""
-	var plugin = "\"" + get_user_agent() + "\""
+	var project = ProjectSettings.get('application/config/name')
+	var plugin = get_user_agent()
 	
 	var cmd = []
 	
 	# Prepare Command Arguments
-	if is_windows:
-		cmd  = ['--config', config_path, '--entity', entity.c_escape(), '--time', timestamp, '--plugin', plugin.c_escape()]
-	else:
-		cmd  = ['--config', config_path, '--entity', entity, '--time', timestamp, '--plugin', plugin]
+	cmd  = ['--config', config_path, '--entity', entity, '--time', timestamp, '--plugin', plugin]
 	
 	if is_write:
-		cmd.append('--write')
+		cmd.append_array(['--write'])
 	
 	if get_editor_interface().get_editor_settings().has_setting("WakaTime/Hide_Project_Name") && get_editor_interface().get_editor_settings().get_setting("WakaTime/Hide_Project_Name"):
 		print("Hiding Project Name")
 	else:
-		if is_windows:
-			cmd.append('--project ' + project.c_escape())
-		else:
-			cmd.append('--project ' + project)
+		cmd.append_array(['--project', project])
+		print(project)
 
 	if get_editor_interface().get_editor_settings().has_setting("WakaTime/Hide_Filenames") && get_editor_interface().get_editor_settings().get_setting("WakaTime/Hide_Filenames"):
 		print("Hiding  Filenames")
-		cmd.append('--hidefilenames')
+		cmd.append_array(['--hidefilenames'])
 	
 	last_heartbeat = heartbeat
 	
-	#print(cmd)
-	#print(wakatime_cli)
+	print(cmd)
+	print(wakatime_cli)
 	OS.execute(wakatime_cli, PoolStringArray(cmd), false, [], false, false)
 
 func _on_script_changed(file):
