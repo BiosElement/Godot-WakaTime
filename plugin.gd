@@ -52,12 +52,11 @@ func send_heartbeat(file, is_write = false):
 		is_windows = true
 	
 	var project = ProjectSettings.get('application/config/name')
-	var plugin = get_user_agent()
 	
 	var cmd = []
 	
 	# Prepare Command Arguments
-	cmd  = ['--config', config_path, '--entity', entity, '--time', timestamp, '--plugin', plugin]
+	cmd  = ['--config', config_path, '--entity', entity, '--time', timestamp, '--plugin', get_user_agent()]
 	
 	if is_write:
 		cmd.append_array(['--write'])
@@ -66,7 +65,6 @@ func send_heartbeat(file, is_write = false):
 		print("Hiding Project Name")
 	else:
 		cmd.append_array(['--project', project])
-		print(project)
 
 	if get_editor_interface().get_editor_settings().has_setting("WakaTime/Hide_Filenames") && get_editor_interface().get_editor_settings().get_setting("WakaTime/Hide_Filenames"):
 		print("Hiding  Filenames")
@@ -74,8 +72,8 @@ func send_heartbeat(file, is_write = false):
 	
 	last_heartbeat = heartbeat
 	
-	print(cmd)
-	print(wakatime_cli)
+	#print(cmd)
+	#print(wakatime_cli)
 	OS.execute(wakatime_cli, PoolStringArray(cmd), false, [], false, false)
 
 func _on_script_changed(file):
@@ -111,7 +109,7 @@ func get_user_agent():
 	return 'Godot/%s %s/%s' % [get_engine_version(), get_plugin_name(), get_plugin_version()]
 
 func get_plugin_name():
-	return 'WakaTime'
+	return 'godot-wakatime'
 
 
 func get_plugin_version():
