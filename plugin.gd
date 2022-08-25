@@ -67,8 +67,12 @@ func send_heartbeat(file, is_write = false):
 		cmd.append_array(['--project', project])
 
 	if get_editor_interface().get_editor_settings().has_setting("WakaTime/Hide_Filenames") && get_editor_interface().get_editor_settings().get_setting("WakaTime/Hide_Filenames"):
-		print("Hiding  Filenames")
+		print("Hiding Filenames")
 		cmd.append_array(['--hidefilenames'])
+	
+	if get_editor_interface().get_editor_settings().has_setting("WakaTime/Hide_Project_Folder") && get_editor_interface().get_editor_settings().get_setting("WakaTime/Hide_Project_Folder"):
+		print("Hiding Project Folder")
+		cmd.append_array(['--project-folder'])
 	
 	last_heartbeat = heartbeat
 	
