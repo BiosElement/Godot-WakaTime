@@ -8,7 +8,6 @@ var options_popup = preload('res://addons/wakatime/options.tscn')
 
 var wakatime_cli = null
 var config_path = null
-var is_windows = false
 
 var last_heartbeat = HeartBeat.new()
 
@@ -18,12 +17,12 @@ func _enter_tree():
 func _ready():
 	var script_editor = get_editor_interface().get_script_editor()
 	script_editor.call_deferred('connect', 'editor_script_changed', self, '_on_script_changed')
-
-	open_options_popup()
+	add_tool_menu_item("WakaTime Settings", self, "open_options_popup")
 
 func _exit_tree():
 	var script_editor = get_editor_interface().get_script_editor()
 	script_editor.disconnect('editor_script_changed', self, '_on_script_changed')
+	remove_tool_menu_item("WakaTime Settings")
 
 
 func send_heartbeat(file, is_write = false):
@@ -47,10 +46,7 @@ func send_heartbeat(file, is_write = false):
 	else:
 		push_warning ("WakaTime Config Path not found, Resorting to Linux default")
 		config_path = OS.get_environment("HOME") + "/.wakatime.cfg"
-	
-	if OS.get_name() == "Windows":
-		is_windows = true
-	
+
 	var project = ProjectSettings.get('application/config/name')
 	
 	var cmd = []
@@ -92,7 +88,7 @@ func save_external_data():
 	send_heartbeat(file, true)
 
 
-func open_options_popup():
+func open_options_popup(ud):
 	var popup_window = options_popup.instance()
 	var settings = get_editor_interface().get_editor_settings()
 	popup_window.init(settings)
