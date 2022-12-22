@@ -10,24 +10,55 @@ var wakatime_cli = null
 var config_path = null
 
 var last_heartbeat = HeartBeat.new()
+var _current_scene_type: String
+var _current_scene_path: String
+var _current_script_path: String
 
 func _enter_tree():
 	pass
 
 func _ready():
-	var script_editor = get_editor_interface().get_script_editor()
-	script_editor.call_deferred('connect', 'editor_script_changed', self, '_on_script_changed')
+	connect("main_screen_changed", self, "_on_main_scene_changed")
+	connect("scene_changed", self, "_on_scene_changed")
+	connect("resource_saved", self, "_on_resource_saved")
+	get_editor_interface().get_script_editor().connect("editor_script_changed", self, "_on_editor_script_changed")
 	add_tool_menu_item("WakaTime Settings", self, "open_options_popup")
 
 func _exit_tree():
-	var script_editor = get_editor_interface().get_script_editor()
-	script_editor.disconnect('editor_script_changed', self, '_on_script_changed')
+	disconnect("main_screen_changed", self, "_on_main_scene_changed")
+	disconnect("scene_changed", self, "_on_scene_changed")
+	disconnect("resource_saved", self, "_on_resource_saved")
+	get_editor_interface().get_script_editor().disconnect("editor_script_changed", self, "_on_editor_script_changed")
 	remove_tool_menu_item("WakaTime Settings")
 
+func _on_editor_script_changed(script: Script) -> void:
+	if script:
+		var _current_script_path = script.get_path()
+		send_heartbeat(_current_script_path)
+
+# Scene here means 2D, 3D, Script, ETC
+func _on_main_scene_changed(screen_name: String) -> void:
+	_current_scene_type = screen_name
+	#print(screen_name)
+
+func _on_scene_changed(screen_root: Node) -> void:
+	if is_instance_valid(screen_root):
+		_current_scene_path = screen_root.filename
+		send_heartbeat(_current_scene_path)
+
+func _on_script_changed(file):
+	send_heartbeat(file)
+
+func save_external_data():
+	print("Scene Saved")
+
+func _on_resource_saved(resource):
+	print("Resource Saved!")
+	send_heartbeat(resource.resource_path, true)
 
 func send_heartbeat(file, is_write = false):
 	# Setting these early to test if valid to send
-	var entity = ProjectSettings.globalize_path(file.resource_path)
+	var entity = file
 	var timestamp = OS.get_unix_time()
 	var heartbeat = HeartBeat.new(entity, timestamp, is_write)
 	
@@ -44,7 +75,7 @@ func send_heartbeat(file, is_write = false):
 	if get_editor_interface().get_editor_settings().has_setting("WakaTime/Config_Path"):
 		config_path = get_editor_interface().get_editor_settings().get_setting("WakaTime/Config_Path")
 	else:
-		push_warning ("WakaTime Config Path not found, Resorting to Linux default")
+		push_warning ("WakaTime Config Path not found, Resorting sto Linux default")
 		config_path = OS.get_environment("HOME") + "/.wakatime.cfg"
 
 	var project = ProjectSettings.get('application/config/name')
@@ -76,18 +107,6 @@ func send_heartbeat(file, is_write = false):
 	#print(wakatime_cli)
 	OS.execute(wakatime_cli, PoolStringArray(cmd), false, [], false, false)
 
-func _on_script_changed(file):
-	send_heartbeat(file)
-
-func _unhandled_key_input(ev):
-	var file = get_current_file()
-	send_heartbeat(file, true)
-
-func save_external_data():
-	var file = get_current_file()
-	send_heartbeat(file, true)
-
-
 func open_options_popup(ud):
 	var popup_window = options_popup.instance()
 	var settings = get_editor_interface().get_editor_settings()
@@ -102,9 +121,6 @@ func open_options_popup(ud):
 func enough_time_has_passed(last_sent_time):
 	return OS.get_unix_time() - last_heartbeat.timestamp >= HeartBeat.FILE_MODIFIED_DELAY
 
-func get_current_file():
-	return get_editor_interface().get_script_editor().get_current_script()
-
 func get_user_agent():
 	return 'Godot/%s %s/%s' % [get_engine_version(), get_plugin_name(), get_plugin_version()]
 
@@ -113,7 +129,7 @@ func get_plugin_name():
 
 
 func get_plugin_version():
-	return '0.1'
+	return '0.2'
 
 
 func get_engine_version():
