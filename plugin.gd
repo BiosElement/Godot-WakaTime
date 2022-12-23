@@ -58,11 +58,13 @@ func _on_resource_saved(resource):
 
 func send_heartbeat(file, is_write = false):
 	# Setting these early to test if valid to send
-	var entity = file
+	# Note this must be a full filesystem path for WakaTime (I think...)
+	var entity = ProjectSettings.globalize_path(file)
+	#print(entity)
 	var timestamp = OS.get_unix_time()
 	var heartbeat = HeartBeat.new(entity, timestamp, is_write)
 	
-	if not is_write or entity == last_heartbeat.entity or not enough_time_has_passed(last_heartbeat.timestamp):
+	if not enough_time_has_passed(last_heartbeat.timestamp):
 		return
 	
 	# Setting CLI Path here because Godot Plugins suck
