@@ -1,4 +1,4 @@
-tool
+@tool
 extends EditorPlugin
 
 const HeartBeat = preload('res://addons/wakatime/heartbeat.gd')
@@ -18,17 +18,17 @@ func _enter_tree():
 	pass
 
 func _ready():
-	connect("main_screen_changed", self, "_on_main_scene_changed")
-	connect("scene_changed", self, "_on_scene_changed")
-	connect("resource_saved", self, "_on_resource_saved")
-	get_editor_interface().get_script_editor().connect("editor_script_changed", self, "_on_editor_script_changed")
-	add_tool_menu_item("WakaTime Settings", self, "open_options_popup")
+	connect("main_screen_changed",Callable(self,"_on_main_scene_changed"))
+	connect("scene_changed",Callable(self,"_on_scene_changed"))
+	connect("resource_saved",Callable(self,"_on_resource_saved"))
+	get_editor_interface().get_script_editor().connect("editor_script_changed",Callable(self,"_on_editor_script_changed"))
+	add_tool_menu_item("WakaTime Settings", open_options_popup)
 
 func _exit_tree():
-	disconnect("main_screen_changed", self, "_on_main_scene_changed")
-	disconnect("scene_changed", self, "_on_scene_changed")
-	disconnect("resource_saved", self, "_on_resource_saved")
-	get_editor_interface().get_script_editor().disconnect("editor_script_changed", self, "_on_editor_script_changed")
+	disconnect("main_screen_changed",Callable(self,"_on_main_scene_changed"))
+	disconnect("scene_changed",Callable(self,"_on_scene_changed"))
+	disconnect("resource_saved",Callable(self,"_on_resource_saved"))
+	get_editor_interface().get_script_editor().disconnect("editor_script_changed",Callable(self,"_on_editor_script_changed"))
 	remove_tool_menu_item("WakaTime Settings")
 
 func _on_editor_script_changed(script: Script) -> void:
@@ -49,7 +49,7 @@ func _on_scene_changed(screen_root: Node) -> void:
 func _on_script_changed(file):
 	send_heartbeat(file)
 
-func save_external_data():
+func _save_external_data():
 	print("Scene Saved")
 
 func _on_resource_saved(resource):
@@ -61,23 +61,23 @@ func send_heartbeat(file, is_write = false):
 	# Note this must be a full filesystem path for WakaTime (I think...)
 	var entity = ProjectSettings.globalize_path(file)
 	#print(entity)
-	var timestamp = OS.get_unix_time()
+	var timestamp = Time.get_unix_time_from_system()
 	var heartbeat = HeartBeat.new(entity, timestamp, is_write)
 	
 	if not enough_time_has_passed(last_heartbeat.timestamp):
 		return
 	
-	# Setting CLI Path here because Godot Plugins suck
+	# Setting CLI Path3D here because Godot Plugins suck
 	if get_editor_interface().get_editor_settings().has_setting("WakaTime/CLI_Path"):
 		wakatime_cli = get_editor_interface().get_editor_settings().get_setting("WakaTime/CLI_Path")
 	else:
-		push_warning ("WakaTime CLI Path not found, Resorting to Linux default")
+		push_warning ("WakaTime CLI Path3D not found, Resorting to Linux default")
 		wakatime_cli = OS.get_environment("HOME") + "/.wakatime/wakatime-cli"
 		
 	if get_editor_interface().get_editor_settings().has_setting("WakaTime/Config_Path"):
 		config_path = get_editor_interface().get_editor_settings().get_setting("WakaTime/Config_Path")
 	else:
-		push_warning ("WakaTime Config Path not found, Resorting sto Linux default")
+		push_warning ("WakaTime Config Path3D not found, Resorting sto Linux default")
 		config_path = OS.get_environment("HOME") + "/.wakatime.cfg"
 
 	var project = ProjectSettings.get('application/config/name')
@@ -107,26 +107,26 @@ func send_heartbeat(file, is_write = false):
 	
 	#print(cmd)
 	#print(wakatime_cli)
-	OS.execute(wakatime_cli, PoolStringArray(cmd), false, [], false, false)
+	OS.execute(wakatime_cli, PackedStringArray(cmd), [], false, false)
 
-func open_options_popup(ud):
-	var popup_window = options_popup.instance()
+func open_options_popup():
+	var popup_window = options_popup.instantiate()
 	var settings = get_editor_interface().get_editor_settings()
 	popup_window.init(settings)
 	add_child(popup_window)
 	popup_window.refresh()
 	popup_window.popup_centered()
-	yield(popup_window, 'popup_hide')
+	await popup_window.popup_hide
 	popup_window.queue_free()
 
 
 func enough_time_has_passed(last_sent_time):
-	return OS.get_unix_time() - last_heartbeat.timestamp >= HeartBeat.FILE_MODIFIED_DELAY
+	return Time.get_unix_time_from_system() - last_heartbeat.timestamp >= HeartBeat.FILE_MODIFIED_DELAY
 
 func get_user_agent():
-	return 'Godot/%s %s/%s' % [get_engine_version(), get_plugin_name(), get_plugin_version()]
+	return 'Godot/%s %s/%s' % [get_engine_version(), _get_plugin_name(), get_plugin_version()]
 
-func get_plugin_name():
+func _get_plugin_name():
 	return 'godot-wakatime'
 
 
